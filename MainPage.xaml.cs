@@ -6,6 +6,7 @@ namespace AppJogoForca;
 public partial class MainPage : ContentPage
 {
 	private Word _word;
+	private int _errors = 0;
 	public MainPage()
 	{
 		InitializeComponent();
@@ -19,7 +20,8 @@ public partial class MainPage : ContentPage
 	}
 
 	private void OnButtonClicked(object sender, EventArgs e)
-	{ 
+	{
+	
 		String letter = ((Button)sender).Text;
 	
 	}

@@ -9,7 +9,7 @@ namespace AppJogoForca.Libraries.Text
     public static class StringExtension
     {
 
-        public static List<int> AllIndexesOf(this string str, string value)
+        public static List<int> GetPositions(this string str, string value)
         {
             if (String.IsNullOrEmpty(value))
                 throw new ArgumentException("the string to find may not be empty", "value");

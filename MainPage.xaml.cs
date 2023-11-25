@@ -13,48 +13,77 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 
 		ResetScreen();	
-
 	}
-
 	private async void OnButtonClicked(object sender, EventArgs e)
-	{
-		((Button)sender).IsEnabled = false;
+    {
+        Button button = ((Button)sender);
+        button.IsEnabled = false;
 
-		String letter = ((Button)sender).Text;
+        String letter = button.Text;
 
-		var positions = _word.Text.GetPositions(letter);
+        var positions = _word.Text.GetPositions(letter);
 
-		if (positions.Count == 0)
-		{
+        if (positions.Count == 0)
+        {
+            ErrorHandler(button);
+            await IsGameOver();
+            return;
+        }
 
-			_errors++;
+        ReplaceLetter(letter, positions);
+        button.Style = App.Current.Resources.MergedDictionaries.ElementAt(1)["Success"] as Style;
 
-			ImgMain.Source = ImageSource.FromFile($"forca{_errors + 1}.png");
+        await HasWinner();
+    }
+    private void OnButtonClickedResetGame(object sender, EventArgs e)
+    {
+        GenerateNewWord();
+    }
 
-			if (_errors == 6)
-			{
-				await DisplayAlert(" Perdeu!", "Você foi enforcado!", "Novo jogo");
-				ResetScreen();
-			}
+    #region Handler Success
+    private void ReplaceLetter(string letter, List<int> positions)
+    {
+        foreach (int position in positions)
+        {
+            LblText.Text = LblText.Text.Remove(position, 1).Insert(position, letter);
+        }
+    }
+    private async Task HasWinner()
+    {
+        if (!LblText.Text.Contains("_"))
+        {
+            await DisplayAlert("Parabéns", "Você acertou a palavra", "Novo jogo");
+            ResetScreen();
+        }
+    }
+    #endregion
 
-			return;
+    #region Handler Error
+    private void ErrorHandler(Button button)
+    {
+        _errors++;
 
-		}
+        ImgMain.Source = ImageSource.FromFile($"forca{_errors + 1}.png");
 
-		foreach (int position in positions)
-		{
-			LblText.Text = LblText.Text.Remove(position, 1).Insert(position, letter);
+        button.Style = App.Current.Resources.MergedDictionaries.ElementAt(1)["Fail"] as Style;
+    }   
+    private async Task IsGameOver()
+    {
+        if (_errors == 6)
+        {
+            await DisplayAlert(" Perdeu!", "Você foi enforcado!", "Novo jogo");
+            ResetScreen();
+        }
+    }
+    #endregion
 
-		}
-	}
-
-	private void ResetScreen()
+    #region Reset Screen - Back Screen to Initial State
+    private void ResetScreen()
 	{
 		ResetVirtualKeyboard();
 		ResetErros();
 		GenerateNewWord();
 	}
-
 	private void GenerateNewWord()
 	{
         var repository = new WordRepositories();
@@ -63,13 +92,11 @@ public partial class MainPage : ContentPage
         LblTips.Text = _word.Tips;
         LblText.Text = new string('_', _word.Text.Length);
     }
-
 	private void ResetErros()
 	{
         _errors = 0;
         ImgMain.Source = ImageSource.FromFile("forca1.png");
     }
-
 	private void ResetVirtualKeyboard()
 	{
 		ResetVirtualLines((HorizontalStackLayout)KeyboardContainer.Children[0]);
@@ -77,14 +104,15 @@ public partial class MainPage : ContentPage
         ResetVirtualLines((HorizontalStackLayout)KeyboardContainer.Children[2]);
 
     }
-
 	private void ResetVirtualLines(HorizontalStackLayout horizontal)
 	{
 		foreach(Button button in horizontal.Children)
 		{
 			button.IsEnabled = true;
-		
+			button.Style = null;
 		}
 	}
+    #endregion
+    
 }
 
